@@ -2,8 +2,15 @@
 import React from 'react';
 import Image from 'next/image';
 import { motion } from "framer-motion";
+import { useMediaQuery } from 'react-responsive';
 
-const COLUMN_COUNT = 7;
+// Responsive column counts
+const COLUMN_COUNTS = {
+  MOBILE: 3,
+  TABLET: 5,
+  DESKTOP: 7
+};
+
 const ROW_COUNT = 7;
 const ITEM_HEIGHT = 160;
 const DURATION = 40;
@@ -36,26 +43,26 @@ const images = [
   '/vito-x/web-24.jpg',
   '/vito-x/web-25.jpg',
   '/vito-x/web-26.jpg',
-  '/vito-x/web-27.jpg', // Update these paths to match your actual image files
+  '/vito-x/web-27.jpg',
 ];
 
 const ColumnComponent = ({ columnIndex, direction }: { columnIndex: number; direction: 1 | -1 }) => {
   const items = [...Array(ROW_COUNT)].map((_, rowIndex) => (
     <div
       key={`${columnIndex}-${rowIndex}`}
-      className="border border-gray-500/40 h-40 flex items-center justify-center overflow-hidden transition-all hover:border-gray-500/60 hover:scale-105"
+      className="border border-gray-500/40 h-32 sm:h-36 md:h-40 flex items-center justify-center overflow-hidden transition-all hover:border-gray-500/60 hover:scale-105"
     >
       <div className="relative w-full h-full">
         <Image
-          src={images[rowIndex % images.length]}  // Cycle through available images
+          src={images[rowIndex % images.length]}
           alt={`Image ${columnIndex}-${rowIndex}`}
           fill
-          sizes="(max-width: 768px) 100vw, 33vw"
+          sizes="(max-width: 640px) 33vw, (max-width: 768px) 20vw, 14vw"
           className="object-cover opacity-60 hover:opacity-100 transition-opacity"
-          priority={rowIndex === 0} // Prioritize loading of first row images
+          priority={rowIndex === 0}
         />
       </div>
-      <div className="absolute text-gray-500/60 font-mono text-sm hover:text-gray-500/80">
+      <div className="absolute text-gray-500/60 font-mono text-xs sm:text-sm hover:text-gray-500/80">
         {`${String(columnIndex + 1).padStart(2, '0')}-${String(rowIndex + 1).padStart(2, '0')}`}
       </div>
     </div>
@@ -76,10 +83,10 @@ const ColumnComponent = ({ columnIndex, direction }: { columnIndex: number; dire
           repeatType: "reverse"
         }}
       >
-        <div className="grid gap-4">
+        <div className="grid gap-2 sm:gap-3 md:gap-4">
           {items}
           {items}
-          {items} {/* Added an extra set for smoother transition */}
+          {items}
         </div>
       </motion.div>
       <div className="absolute inset-0 pointer-events-none z-10 bg-gradient-to-b from-background via-transparent to-background" />
@@ -88,10 +95,19 @@ const ColumnComponent = ({ columnIndex, direction }: { columnIndex: number; dire
 };
 
 const Background = () => {
+  const isMobile = useMediaQuery({ maxWidth: 640 });
+  const isTablet = useMediaQuery({ minWidth: 641, maxWidth: 1024 });
+  
+  const getColumnCount = () => {
+    if (isMobile) return COLUMN_COUNTS.MOBILE;
+    if (isTablet) return COLUMN_COUNTS.TABLET;
+    return COLUMN_COUNTS.DESKTOP;
+  };
+
   return (
     <div className="absolute top-0 left-0 w-full h-full -z-10 overflow-hidden bg-background">
-      <div className="grid grid-flow-col gap-4 mx-4 h-full">
-        {[...Array(COLUMN_COUNT)].map((_, colIndex) => (
+      <div className="grid grid-flow-col gap-2 sm:gap-3 md:gap-4 mx-2 sm:mx-3 md:mx-4 h-full">
+        {[...Array(getColumnCount())].map((_, colIndex) => (
           <ColumnComponent
             key={colIndex}
             columnIndex={colIndex}
