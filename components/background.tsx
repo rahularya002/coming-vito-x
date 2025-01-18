@@ -1,5 +1,6 @@
 "use client"
 import React from 'react';
+import Image from 'next/image';
 import { motion } from "framer-motion";
 
 const COLUMN_COUNT = 7;
@@ -44,11 +45,16 @@ const ColumnComponent = ({ columnIndex, direction }: { columnIndex: number; dire
       key={`${columnIndex}-${rowIndex}`}
       className="border border-gray-500/40 h-40 flex items-center justify-center overflow-hidden transition-all hover:border-gray-500/60 hover:scale-105"
     >
-      <img 
-        src={images[rowIndex % images.length]}  // Cycle through available images
-        alt={`Image ${columnIndex}-${rowIndex}`}
-        className="w-full h-full object-cover opacity-60 hover:opacity-100 transition-opacity "
-      />
+      <div className="relative w-full h-full">
+        <Image
+          src={images[rowIndex % images.length]}  // Cycle through available images
+          alt={`Image ${columnIndex}-${rowIndex}`}
+          fill
+          sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-cover opacity-60 hover:opacity-100 transition-opacity"
+          priority={rowIndex === 0} // Prioritize loading of first row images
+        />
+      </div>
       <div className="absolute text-gray-500/60 font-mono text-sm hover:text-gray-500/80">
         {`${String(columnIndex + 1).padStart(2, '0')}-${String(rowIndex + 1).padStart(2, '0')}`}
       </div>
