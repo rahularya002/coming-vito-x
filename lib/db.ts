@@ -1,24 +1,48 @@
 import mongoose from "mongoose";
 
-export const connectToDb = async () => {
-    const uri = process.env.MONGODB_URI;
+if (!process.env.MONGODB_URI) {
+    throw new Error("Please define the MONGODB_URI environment variable");
+  }
 
-    if (!uri) {
-        throw new Error("Please provide a valid MongoDB connection string.");
-    }
+const MONGODB_URI: string = process.env.MONGODB_URI;
 
-    // Check the connection state
-    if (mongoose.connection.readyState === 0) {
-        try {
-            await mongoose.connect(uri,{
-                dbName: "vito-x"
-            });
-            console.log("Connected to MongoDB successfully.");
-        } catch (error) {
-            console.error("Error connecting to MongoDB:", error);
-            throw new Error("Error connecting to MongoDB.");
-        }
-    } else {
-        console.log("Already connected to MongoDB.");
-    }
-};
+
+
+interface MongooseCache {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+}
+
+let cached: MongooseCache = (global as any).mongoose;
+
+if (!cached) {
+  cached = (global as any).mongoose = { conn: null, promise: null };
+}
+
+export async function connectToDb() {
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+      dbName: "vito-x"
+    };
+
+    cached.promise = mongoose.connect(MONGODB_URI, opts);
+  }
+
+  try {
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    throw e;
+  }
+
+  return cached.conn;
+}
+
+declare global {
+  var mongoose: MongooseCache | undefined;
+}
