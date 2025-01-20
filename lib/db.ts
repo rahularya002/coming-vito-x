@@ -44,5 +44,5 @@ export async function connectToDb() {
 }
 
 declare global {
-  var mongoose: MongooseCache | undefined;
+  let mongoose: MongooseCache | undefined;
 }
